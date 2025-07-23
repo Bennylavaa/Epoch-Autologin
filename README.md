@@ -2,7 +2,7 @@
 
 Patch for the Project Epoch client that adds auto login saving features.
 
-![image](https://github.com/Bennylavaa/Epoch-Autologin/assets/165105701/1a859211-1dec-4f78-826b-a1d7ba375940)
+<img width="1751" height="980" alt="image" src="https://github.com/user-attachments/assets/a6214f9a-409a-40c7-aec6-ab55b8458547" />
 
 ## Features:
 
