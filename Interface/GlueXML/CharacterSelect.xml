@@ -159,7 +159,7 @@
 							<Anchors>
 								<Anchor point="BOTTOM">
 									<Offset>
-										<AbsDimension x="0" y="100"/>
+										<AbsDimension x="0" y="125"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -181,9 +181,9 @@
 					</Layer>
 				</Layers>
 				<Frames>
-					<Button name="CharSelectEnterWorldButton" inherits="GlueButtonTemplate" text="ENTER_WORLD">
+					<Button name="CharSelectEnterWorldButton" inherits="GlueButtonTemplateLarge" text="ENTER_WORLD">
 						<Size>
-							<AbsDimension x="200" y="60"/>
+							<AbsDimension x="220" y="110"/>
 						</Size>
 						<Anchors>
 							<Anchor point="BOTTOM">
