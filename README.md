@@ -17,7 +17,10 @@ Patch for the Project Epoch client that adds auto login saving features.
 2. Unpack the Zip file
 3. Open the archive "Epoch-Autologin-main"
 4. Copy the Interface folder into your Project Epoch Directory
-5. Launch WoW- Enter your login and password, set checked 'Remember Account Name'
+5. Launch WoW- Enter your login and password.
+
+### Optional:
+You can now modify the config.lua file to add as many accounts as you with without having to reply on the config.wtf file. This also comes with character and account sorting as well. 
 
 ## Note:
 Password is saved in plain text under `accountName` in the /WTF/config.wtf file.
