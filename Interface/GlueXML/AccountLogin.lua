@@ -12,12 +12,18 @@ function Autologin_Load()
     return
   end
   local val = GetSavedAccountName()
-  for n, p, c in string.gmatch(val, "(%S+) (%S+) *(%d*);") do
+
+  Autologin_Table = {}
+
+  for n, p, c in string.gmatch(val, "([^%s]+)%s+([^%s]+)%s*(%d*);") do
     if (c == "") then c = "-" end
 
     -- Decompress duplicate passwords
     if (string.find(p, "~%d") == 1) then
-      p = Autologin_Table[tonumber(string.sub(p, 2, 3))].password;
+      local refIndex = tonumber(string.sub(p, 2))
+      if refIndex and Autologin_Table[refIndex] then
+        p = Autologin_Table[refIndex].password;
+      end
     end
 
     table.insert(Autologin_Table, { name = n, password = p, character = c });
