@@ -1,6 +1,6 @@
 # Epoch-Autologin
 
-Patch for the Project Epoch client that adds auto login saving features.
+Enhanced login system for Project Epoch client with account management and character sorting features.
 
 <img width="1751" height="980" alt="image" src="https://github.com/user-attachments/assets/a6214f9a-409a-40c7-aec6-ab55b8458547" />
 
@@ -20,7 +20,30 @@ Patch for the Project Epoch client that adds auto login saving features.
 5. Launch WoW- Enter your login and password.
 
 ### Optional:
-You can now modify the config.lua file to add as many accounts as you with without having to reply on the config.wtf file. This also comes with character and account sorting as well. 
+For advanced users, you can pre-configure accounts and character sorting:
+
+### Edit `Interface/GlueXML/Accounts.lua`:
+```lua
+AutoLoginAccounts = {
+  { 
+    name = "account1", 
+    password = "password1", 
+    character = "-",  -- "-" for no auto-character, or character slot number
+    characterOrder = { "character1", "character2", "character3" }
+  },
+  { 
+    name = "account2", 
+    password = "password2", 
+    character = "2",  -- Auto-login to character slot 2
+    characterOrder = { "character1", "character2", "character3" }
+  },
+}
+```
+
+- **`characterOrder`** - List character names in your preferred display order
+- Characters not listed will appear after sorted ones in default order
+- Each account can have its own unique character ordering
+- Leave out `characterOrder` to use default WoW sorting
 
 ## Note:
 Password is saved in plain text under `accountName` in the /WTF/config.wtf file.
