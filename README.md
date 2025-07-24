@@ -22,7 +22,7 @@ Enhanced login system for Project Epoch client with account management and chara
 ### Optional:
 For advanced users, you can pre-configure accounts and character sorting:
 
-### Edit `Interface/GlueXML/Accounts.lua`:
+### Edit `Interface/GlueXML/Config.lua`:
 ```lua
 AutoLoginAccounts = {
   { 
