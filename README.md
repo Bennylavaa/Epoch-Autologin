@@ -5,6 +5,7 @@ Enhanced login system for Project Epoch client with account management and chara
 <img width="1751" height="980" alt="image" src="https://github.com/user-attachments/assets/a6214f9a-409a-40c7-aec6-ab55b8458547" />
 
 Note: I will not be accepting error reports on this, it works and if you have errors or issues something is wrong with your setup. Also, it does not work with account names with spaces in it or character names with special characters in it. 
+
 Note2: I am aware that if you back out of the character selection screen if using the config.lua method the password will not auto fill until you restart the client. 
 
 Feel free to push Pull requests for any features or fixes you want. 
