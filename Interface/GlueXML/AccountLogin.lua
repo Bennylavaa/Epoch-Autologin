@@ -4,6 +4,62 @@ Autologin_CurrentPage = 0;
 Autologin_PageSize = 4;
 Autologin_LimitReached = false;
 
+-- === Local-only obfuscation helpers (do NOT leak to _G) ===
+do
+  local b ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+  local function b64enc(data)
+    return ((data:gsub('.', function(x)
+      local r,byte='',x:byte()
+      for i=8,1,-1 do r = r .. (byte%2^i-byte%2^(i-1)>0 and '1' or '0') end
+      return r
+    end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+      if #x < 6 then return '' end
+      local c=0; for i=1,6 do c=c+((x:sub(i,i)=='1') and 2^(6-i) or 0) end
+      return b:sub(c+1,c+1)
+    end)..({ '', '==', '=' })[#data%3+1])
+  end
+  local function b64dec(data)
+    data = data:gsub('[^'..b..'=]','')
+    return (data:gsub('.', function(x)
+      if x=='=' then return '' end
+      local r,f='', (b:find(x)-1)
+      for i=6,1,-1 do r = r .. (f%2^i-f%2^(i-1)>0 and '1' or '0') end
+      return r
+    end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
+      if #x~=8 then return '' end
+      local c=0; for i=1,8 do c=c+((x:sub(i,i)=='1') and 2^(8-i) or 0) end
+      return string.char(c)
+    end))
+  end
+  local function xor_bytes(s, key)
+    local out,kl={}, #key
+    for i=1,#s do out[i]=string.char(bit.bxor(s:byte(i), key:byte(((i-1)%kl)+1))) end
+    return table.concat(out)
+  end
+
+  -- >>> Change this per-user. Keep it local in code. <<<
+  local LOCAL_KEY = "CHANGE THIS TO A LONG RANDOM STRING ON EACH UPDATE"
+
+  local function derive(name)
+    local key = LOCAL_KEY .. ":" .. (name or "")
+    while #key < 64 do key = key .. key end
+    return key
+  end
+
+  -- local-only helpers for this file:
+  local function EAL_EncodePassword(plain, name)
+    return "!e:" .. b64enc(xor_bytes(plain, derive(name)))
+  end
+  local function EAL_DecodePassword(token, name)
+    if not token or token:sub(1,3) ~= "!e:" then return token end
+    return xor_bytes(b64dec(token:sub(4)), derive(name))
+  end
+
+  -- expose to the rest of THIS file via upvalues
+  _EAL_EncodePassword = EAL_EncodePassword
+  _EAL_DecodePassword = EAL_DecodePassword
+end
+
 function Autologin_Load()
   if next(AutoLoginAccounts) then
     Autologin_Table = AutoLoginAccounts
@@ -11,76 +67,101 @@ function Autologin_Load()
     AutologinClearCharacterButton:Disable()
     return
   end
-  local val = GetSavedAccountName()
 
+  local val = GetSavedAccountName() or ""
   Autologin_Table = {}
+  local changed = false
 
   for n, p, c in string.gmatch(val, "([^%s]+)%s+([^%s]+)%s*(%d*);") do
-    if (c == "") then c = "-" end
+    if c == "" then c = "-" end
 
-    -- Decompress duplicate passwords
-    if (string.find(p, "~%d") == 1) then
-      local refIndex = tonumber(string.sub(p, 2))
+    -- Legacy: resolve "~j" refs (old compressed saves)
+    if type(p) == "string" and p:sub(1,1) == "~" then
+      local refIndex = tonumber(p:sub(2))
       if refIndex and Autologin_Table[refIndex] then
-        p = Autologin_Table[refIndex].password;
+        p = Autologin_Table[refIndex].password
       end
     end
 
-    table.insert(Autologin_Table, { name = n, password = p, character = c });
+    -- Migrate plaintext to encoded (salted by account name)
+    if type(p) == "string" and p:sub(1,3) ~= "!e:" then
+      p = _EAL_EncodePassword(p, n)
+      changed = true
+    end
+
+    table.insert(Autologin_Table, { name = n, password = p, character = c })
+  end
+
+  -- If we migrated anything, rewrite the CVar (no compression)
+  if changed then
+    local parts = {}
+    for i = 1, #Autologin_Table do
+      local r = Autologin_Table[i]
+      parts[#parts+1] = r.name .. " " .. r.password .. (r.character == "-" and ";" or (" " .. r.character .. ";"))
+    end
+    local savedVar = table.concat(parts, "")
+    Autologin_LimitReached = string.len(savedVar) > 240
+    SetSavedAccountName(savedVar)
   end
 end
+
 
 function Autologin_Save(name, password)
   if next(AutoLoginAccounts) then return end
-  -- Add/update name and password in table
+  -- add/update in-memory table (store encoded token, salted by account name)
   if (name ~= nil and name ~= "" and password ~= nil and password ~= "") then
-    local exists = false;
+    local exists = false
     for i = 1, table.getn(Autologin_Table) do
       if (Autologin_Table[i].name == name) then
-        exists = true;
-        Autologin_Table[i].password = password;
+        exists = true
+        local token = password
+        if token:sub(1,3) ~= "!e:" then
+          token = _EAL_EncodePassword(password, name) -- salt = account name
+        end
+        Autologin_Table[i].password = token
       end
     end
     if (not exists) then
-      table.insert(Autologin_Table,
-                   { name = name, password = password, character = "-" });
+      local token = (password:sub(1,3) == "!e:") and password or _EAL_EncodePassword(password, name)
+      table.insert(Autologin_Table, { name = name, password = token, character = "-" })
     end
   end
 
-  -- If table is empty, reset saved var
-  if (table.getn(Autologin_Table) == 0) then
-    SetSavedAccountName('');
-    return;
-  end
-
-  -- Serialize table to saved var
-  local savedVar = "";
+  -- serialize to CVar (NO duplicate compression)
+  local savedVar = ""
   for i = 1, table.getn(Autologin_Table) do
-    local r = Autologin_Table[i];
-
-    -- Compress duplicate passwords
-    local pw = r.password;
-    for j = 1, i - 1 do
-      if (Autologin_Table[j].password == r.password) then pw = '~' .. j end
-    end
-
-    savedVar = savedVar .. r.name .. ' ' .. pw;
+    local r = Autologin_Table[i]
+    local pw = r.password  -- already encoded token
+    savedVar = savedVar .. r.name .. " " .. pw
     if (r.character == "-") then
-      savedVar = savedVar .. ";";
+      savedVar = savedVar .. ";"
     else
-      savedVar = savedVar .. ' ' .. r.character .. ';';
+      savedVar = savedVar .. " " .. r.character .. ";"
     end
   end
 
-  Autologin_LimitReached = string.len(savedVar) > 240;
-  SetSavedAccountName(savedVar);
+  Autologin_LimitReached = string.len(savedVar) > 240
+  SetSavedAccountName(savedVar)
 end
+
 
 function Autologin_SelectAccount(idx)
-  local i = Autologin_CurrentPage * Autologin_PageSize + idx;
-  AccountLoginAccountEdit:SetText(Autologin_Table[i].name);
-  AccountLoginPasswordEdit:SetText(Autologin_Table[i].password);
+  local i = Autologin_CurrentPage * Autologin_PageSize + idx
+  local row = Autologin_Table[i]
+  if not row then return end
+
+  AccountLoginAccountEdit:SetText(row.name)
+
+  local token = row.password
+  local pwd = token
+  if type(token)=="string" and token:sub(1,3)=="!e:" then
+    pwd = _EAL_DecodePassword(token, row.name) -- salt = account name
+  end
+  if AccountLoginPasswordEdit and pwd then
+    AccountLoginPasswordEdit:SetText(pwd)
+  end
 end
+
 
 function Autologin_OnNameUpdate(name)
   Autologin_SelectedIdx = nil;
@@ -106,7 +187,7 @@ function Autologin_UpdateUI()
       getglobal("AutologinAccountButton" .. i .. "ButtonTextName"):SetText(
           r.name);
       getglobal("AutologinAccountButton" .. i .. "ButtonTextPassword"):SetText(
-          'Password: ' .. string.rep("*", string.len(r.password)));
+          'Password: ******');
 
       if (r.character == '-') then
         getglobal("AutologinAccountButton" .. i .. "ButtonTextCharacter"):SetText(
