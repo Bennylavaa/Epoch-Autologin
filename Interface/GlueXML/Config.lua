@@ -32,3 +32,8 @@ AutoLoginAccounts = {
   --   -- No characterOrder = uses default WoW ordering
   -- },
 }
+
+AutologinRetry = {
+    autoStart = false, -- Automatically start the autologin process
+    checkInterval = 1.0,
+}

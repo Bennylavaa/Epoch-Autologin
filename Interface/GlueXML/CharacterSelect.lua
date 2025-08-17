@@ -75,7 +75,7 @@ function UpdateCharacterList()
         local button = _G["CharSelectCharacterButton"..index];
 
         if not name then
-            button:SetText("ERROR - Tell Jeremy");
+            button:SetText("ERROR - Contact Bennylavaa");
         else
             if not zone then
                 zone = "";
