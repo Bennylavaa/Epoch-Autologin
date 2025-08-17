@@ -2,11 +2,7 @@
 
 Enhanced login system for Project Epoch client with account management and character sorting features.
 
-<img width="1751" height="980" alt="image" src="https://github.com/user-attachments/assets/a6214f9a-409a-40c7-aec6-ab55b8458547" />
-
-Note: I will not be accepting error reports on this, it works and if you have errors or issues something is wrong with your setup. Also, it does not work with account names with spaces in it or character names with special characters in it. 
-
-Note2: I am aware that if you back out of the character selection screen if using the config.lua method the password will not auto fill until you restart the client. 
+<img width="1751" height="983" alt="image" src="https://github.com/user-attachments/assets/c39b3708-af70-4600-b44e-cca8e058c095" />
 
 Feel free to push Pull requests for any features or fixes you want. 
 
@@ -17,6 +13,7 @@ Feel free to push Pull requests for any features or fixes you want.
 - Select accounts to log in (double-click to log in directly)
 - Check "Auto-login this character" in the character select screen to always automatically load into game with this character selected in future logins
 - Remove saved characters and accounts with controls at the bottom
+- Auto Login retry system
 
 ## Installation:
 1. [Download](https://github.com/Bennylavaa/Epoch-Autologin/archive/refs/heads/master.zip)
@@ -25,10 +22,10 @@ Feel free to push Pull requests for any features or fixes you want.
 4. Copy the Interface folder into your Project Epoch Directory
 5. Launch WoW- Enter your login and password.
 
-### Optional:
+## Optional:
 For advanced users, you can pre-configure accounts and character sorting:
 
-### Edit `Interface/GlueXML/Config.lua`:
+Edit `Interface/GlueXML/Config.lua`:
 ```lua
 AutoLoginAccounts = {
   { 
@@ -44,6 +41,11 @@ AutoLoginAccounts = {
     characterOrder = { "character1", "character2", "character3" }
   },
 }
+
+AutologinRetry = {
+    autoStart = false, -- Automatically start the autologin process
+    checkInterval = 1.0,
+}
 ```
 
 - **`characterOrder`** - List character names in your preferred display order
@@ -52,7 +54,7 @@ AutoLoginAccounts = {
 - Leave out `characterOrder` to use default WoW sorting
 
 ## Note:
-Password is saved in plain text under `accountName` in the /WTF/config.wtf file.
+Password is saved in plain text with XOR-based encryption under `accountName` in the /WTF/config.wtf file.
 
 format:
 
