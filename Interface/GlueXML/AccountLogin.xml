@@ -467,7 +467,7 @@
                         <Anchors>
                             <Anchor point="BOTTOM">
                                 <Offset>
-                                    <AbsDimension x="0" y="345"/>
+                                    <AbsDimension x="-3" y="345"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
@@ -543,9 +543,9 @@
                     <EditBox name="AccountLoginPasswordEdit" letters="16" password="1">
                         <Size x="200" y="37"/>
                         <Anchors>
-                            <Anchor point="BOTTOM">
+                            <Anchor point="TOP" relativeTo="AccountLoginAccountEdit" relativePoint="CENTER">
                                 <Offset>
-                                    <AbsDimension x="0" y="275"/>
+                                    <AbsDimension x="0" y="-50"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
