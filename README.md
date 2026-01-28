@@ -1,5 +1,7 @@
 # Epoch-Autologin
 
+**NOTE: I no longer play on Project Epoch and this will not recieve any further updates, feel free to fork this repo an continue development.**
+
 Enhanced login system for Project Epoch client with account management and character sorting features.
 
 <img width="1751" height="983" alt="image" src="https://github.com/user-attachments/assets/c39b3708-af70-4600-b44e-cca8e058c095" />
